@@ -1,0 +1,449 @@
+/* ─────────────────────────────────────────────────────
+   Google Fonts — Playfair Display (elegant serif headings)
+   and Lato (clean, readable body text).
+   Imported here as requested; must stay above @tailwind.
+   ───────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Lato:wght@300;400;700&family=Dancing+Script:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base page styling ───────────────────────────────── */
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #100a10; /* very dark plum */
+  /* Soft warm glows layered over the dark plum base */
+  background-image:
+    radial-gradient(circle at 18% 20%, rgba(242, 160, 176, 0.09), transparent 42%),
+    radial-gradient(circle at 82% 78%, rgba(245, 200, 66, 0.08), transparent 46%),
+    radial-gradient(circle at 50% 50%, rgba(13, 6, 8, 0.55), #0d0608 92%);
+  background-attachment: fixed;
+  color: #e8d5c4; /* soft cream body text */
+  font-family: 'Lato', 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+/* Gentle rose scrollbar for the gallery screen */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0608;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(242, 160, 176, 0.3);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(242, 160, 176, 0.5);
+}
+
+/* ── Reusable helpers ────────────────────────────────── */
+.animate-fade-in {
+  animation: fade-in 0.8s ease both;
+}
+.text-glow-gold {
+  text-shadow:
+    0 0 18px rgba(245, 200, 66, 0.55),
+    0 0 40px rgba(245, 200, 66, 0.22);
+}
+.text-glow-rose {
+  text-shadow:
+    0 0 18px rgba(242, 160, 176, 0.5),
+    0 0 40px rgba(242, 160, 176, 0.22);
+}
+
+/* ── (1) Floating hearts ─────────────────────────────── */
+.floating-heart {
+  position: absolute;
+  bottom: -8%;
+  line-height: 1;
+  will-change: transform, opacity;
+  animation-name: float-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  user-select: none;
+  pointer-events: none;
+}
+@keyframes float-up {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--heart-opacity, 0.8);
+  }
+  88% {
+    opacity: var(--heart-opacity, 0.8);
+  }
+  100% {
+    transform: translateY(-112vh) translateX(var(--heart-drift, 0px)) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* ── (2) Countdown card pulse glow ───────────────────── */
+@keyframes card-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 15px rgba(245, 200, 66, 0.12),
+      inset 0 0 12px rgba(255, 255, 255, 0.03);
+  }
+  50% {
+    box-shadow:
+      0 0 34px rgba(245, 200, 66, 0.34),
+      inset 0 0 18px rgba(255, 255, 255, 0.05);
+  }
+}
+.animate-card-glow {
+  animation: card-glow 3.2s ease-in-out infinite;
+}
+
+/* ── (4) Confetti rain ───────────────────────────────── */
+.confetti-piece {
+  position: absolute;
+  top: -12vh;
+  will-change: transform, opacity;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-12vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(112vh) rotate(720deg);
+    opacity: 0.85;
+  }
+}
+
+/* ── (3) Candle flame flicker + blow-out ─────────────── */
+@keyframes flicker {
+  0%,
+  100% {
+    transform: translateX(-50%) scaleY(1) rotate(-1deg);
+    opacity: 1;
+  }
+  25% {
+    transform: translateX(-50%) scaleY(1.08) scaleX(0.96) rotate(2deg);
+    opacity: 0.92;
+  }
+  50% {
+    transform: translateX(-50%) scaleY(0.94) scaleX(1.05) rotate(-2deg);
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(-50%) scaleY(1.05) scaleX(0.98) rotate(1deg);
+    opacity: 0.95;
+  }
+}
+.candle-flame {
+  animation: flicker 0.14s ease-in-out infinite;
+}
+
+/* Thin wisp of smoke rising after the candles are blown out */
+@keyframes smoke-rise {
+  0% {
+    transform: translateX(-50%) translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(-50%) translateY(-46px) scale(1.4);
+    opacity: 0;
+  }
+}
+.smoke {
+  animation: smoke-rise 1.1s ease-out forwards;
+}
+
+/* ── Sparkle / heart burst on candle blow-out ────────── */
+@keyframes sparkle-burst {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--sx, 0), var(--sy, 0)) scale(1.15);
+    opacity: 0;
+  }
+}
+.sparkle {
+  animation: sparkle-burst 0.95s ease-out forwards;
+}
+
+/* ── (7) Soft pulsing glow for call-to-action buttons ── */
+@keyframes soft-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 12px rgba(245, 200, 66, 0.35),
+      0 0 26px rgba(242, 160, 176, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 26px rgba(245, 200, 66, 0.7),
+      0 0 52px rgba(242, 160, 176, 0.5);
+  }
+}
+.animate-soft-glow {
+  animation: soft-glow 2.4s ease-in-out infinite;
+}
+
+/* ── (5) General fade-in keyframe ────────────────────── */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Photo gallery: polaroid frames + tap-through card deck ─── */
+.polaroid {
+  background: #fffdf9;
+  padding: 12px 12px 0 12px;
+  border-radius: 4px;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.polaroid__frame {
+  overflow: hidden;
+  background: #e9e0d6; /* soft cream behind the photo */
+  border-radius: 2px;
+}
+.polaroid__frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 46vh;
+  object-fit: contain;
+}
+.polaroid__caption {
+  font-family: 'Dancing Script', cursive;
+  color: #3a2b2f;
+  text-align: center;
+  padding: 8px 6px 16px;
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.15;
+  min-height: 2.6rem;
+}
+
+/* The deck: cards are stacked absolutely, centered in the container */
+.deck-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Depth + tilt layer — transitions smoothly when a card advances forward */
+.deck-depth {
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.6s ease;
+  will-change: transform, opacity;
+}
+/* Gentle idle breathing on the top card to invite a tap */
+@keyframes photo-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.012);
+  }
+}
+.deck-anim {
+  animation: photo-breathe 4.5s ease-in-out infinite;
+}
+/* When a photo is tapped it lifts up and dissolves away, dreamlike */
+@keyframes photo-lift-away {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: translateY(-46vh) rotate(-6deg) scale(0.82);
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+.deck-exit {
+  animation: photo-lift-away 0.75s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ── Polaroid date line (optional, shown under the caption) ── */
+.polaroid__date {
+  display: block;
+  margin-top: 3px;
+  font-family: 'Lato', 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9a7d70;
+}
+
+/* ── Typewriter blinking caret (message screen) ── */
+.type-caret {
+  display: inline-block;
+  margin-left: 1px;
+  font-weight: 400;
+  color: #f5c842;
+  animation: caret-blink 0.9s step-end infinite;
+}
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ── Finale confetti burst (fires once, outward from centre) ── */
+.confetti-burst-piece {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  will-change: transform, opacity;
+  animation: confetti-pop 1.9s ease-out forwards;
+}
+@keyframes confetti-pop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    opacity: 1;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--bx, 0)), calc(-50% + var(--by, 0)))
+      scale(1) rotate(var(--br, 360deg));
+    opacity: 0;
+  }
+}
+
+/* ── Secret gate: gentle "no no" head-shake on a wrong answer ── */
+@keyframes gate-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-9px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+.animate-gate-shake {
+  animation: gate-shake 0.45s ease-in-out;
+}
+
+/* ── Celebration: pulsing pill while the mic listens for her breath ── */
+@keyframes mic-listen-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(242, 160, 176, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(242, 160, 176, 0);
+  }
+}
+.mic-listening {
+  animation: mic-listen-pulse 1.4s ease-out infinite;
+}
+
+/* ── Promise coupons: wrapped gifts that flip open in 3D ── */
+.coupon-flip {
+  perspective: 1100px;
+  -webkit-tap-highlight-color: transparent;
+}
+.coupon-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.34, 1.3, 0.5, 1);
+  will-change: transform;
+}
+.coupon-inner--flipped {
+  transform: rotateY(180deg);
+}
+/* Gentle wobble on the still-wrapped gifts, inviting a tap */
+.coupon-flip:not(:disabled):hover .coupon-inner {
+  transform: rotateY(12deg) scale(1.02);
+}
+.coupon-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+/* Front: gift-wrap in blush + gold, with a ribbon cross */
+.coupon-face--front {
+  background:
+    /* the ribbon: one vertical + one horizontal gold band */
+    linear-gradient(90deg, transparent 0 calc(50% - 7px), rgba(245, 200, 66, 0.85) calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px)),
+    linear-gradient(0deg, transparent 0 calc(50% - 7px), rgba(245, 200, 66, 0.85) calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px)),
+    linear-gradient(135deg, #f3b7c6, #e8899b);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+/* Back: the ivory coupon itself, like a little paper ticket */
+.coupon-face--back {
+  transform: rotateY(180deg);
+  background: #fffdf9;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 6px #fffdf9,
+    inset 0 0 0 7px rgba(180, 138, 122, 0.45); /* thin inner ticket border */
+}
+
+/* Kindly respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
