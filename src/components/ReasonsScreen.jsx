@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import reasons from '../reasons.js';
+import CineText from './CineText.jsx';
 
 // She reveals the reasons one at a time by tapping the button.
 // Each new reason gently fades in below the previous ones.
@@ -25,20 +26,27 @@ export default function ReasonsScreen({ onNext }) {
 
   return (
     <section className="flex min-h-screen w-full flex-col items-center justify-center px-5 py-14 text-center sm:px-6 sm:py-16">
-      <h2 className="text-glow-gold animate-fade-in mb-2 font-serif text-3xl font-semibold text-ivory sm:text-5xl">
-        Reasons I Love You 💛
-      </h2>
-      <p className="animate-fade-in mb-8 max-w-md px-2 font-sans text-sm text-cream/80 sm:text-base">
-        In case you ever forget, even for a second…
+      <CineText
+        as="h2"
+        text="reasons i luv u 💛"
+        delay={0.2}
+        className="text-glow-gold mb-2 font-serif text-3xl font-semibold text-ivory sm:text-5xl"
+      />
+      <p
+        className="cine-rise mb-8 max-w-md px-2 font-sans text-sm text-cream/80 sm:text-base"
+        style={{ animationDelay: '0.7s' }}
+      >
+        just in case u ever forget, even for a sec… 🥺
       </p>
 
       <div className="flex w-full max-w-md flex-col gap-4">
         {reasons.slice(0, count).map((reason, i) => (
           <div
             key={i}
-            className="animate-fade-in flex items-start gap-4 rounded-2xl border border-blush/20 bg-white/5 px-5 py-4 text-left backdrop-blur-md"
+            className="cine-card flex items-start gap-4 rounded-2xl border border-blush/20 bg-white/5 px-5 py-4 text-left backdrop-blur-md"
+            style={{ animationDelay: i === 0 ? '1.1s' : '0s' }}
           >
-            <span className="font-serif text-2xl font-bold leading-none text-gold sm:text-3xl">
+            <span className="text-glow-gold font-serif text-2xl font-bold leading-none text-gold sm:text-3xl">
               {i + 1}
             </span>
             <p className="font-serif text-base italic leading-relaxed text-cream sm:text-lg">
@@ -58,7 +66,7 @@ export default function ReasonsScreen({ onNext }) {
               : 'border-blush/40 bg-blush/10 text-blush hover:bg-blush/20'
           }`}
         >
-          {allShown ? 'I made you some promises →' : 'One more reason 💛'}
+          {allShown ? 'i made u some promises 🤞 →' : 'one more reason 👉💛'}
         </button>
       )}
 
@@ -67,7 +75,7 @@ export default function ReasonsScreen({ onNext }) {
           onClick={onNext}
           className="animate-soft-glow mt-4 rounded-full border border-gold/40 bg-gold/10 px-7 py-3 font-sans text-base font-semibold text-gold active:scale-95"
         >
-          I made you some promises →
+          i made u some promises 🤞 →
         </button>
       )}
 

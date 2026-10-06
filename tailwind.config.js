@@ -1,5 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  // Hover effects only on devices with a real mouse — so on her phone a
+  // tapped button never stays stuck in its "hovered" look.
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {

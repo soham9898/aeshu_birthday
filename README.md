@@ -3,19 +3,33 @@
 A beautiful, minimal, deeply romantic single-page birthday website — built with
 **Vite + React + Tailwind CSS**. No backend, fully static, ready for GitHub Pages.
 
-The experience flows through eight full-screen moments:
+The experience plays like a little movie 🎬 — opening titles ("soham presents…"),
+film grain, cinema bars, and a chapter title card before every scene. It flows
+through nine full-screen moments:
 
 1. **Secret Gate** 🔐 – a playful question only she can answer unlocks the site.
-2. **Countdown** – a live timer ticking down to the birthday.
-3. **Celebration** – a decorated animated cake, confetti rain — and she can **blow
+2. **Countdown** – a live timer ticking down to the birthday; the final ten
+   seconds take over the screen with giant numbers and a heartbeat.
+3. **Celebration** – lights off, only the candles glowing… a decorated animated
+   cake — and she can **blow
    the candles out with her real breath** 🎤 (the mic listens; tapping works too).
+   The room lights up with a flash, the big "Happy Birthday" lands, confetti rains.
    Her favourite song starts playing here and loops softly through every screen.
-4. **Photo Gallery** – your memories as a stack of polaroids she taps through, one at a time.
-5. **Personal Message** – your love letter, typing itself out in elegant italics.
+4. **Photo Gallery** – your memories as a deck of polaroids; each one waits behind
+   a blur until she taps to reveal it (it "develops" like a real polaroid), and the
+   next tap lifts it away to the next memory.
+5. **Personal Message** – a sealed envelope she opens herself; then your love letter
+   writes itself out, phrase by phrase, in elegant italics.
 6. **Reasons I Love You** – reasons she reveals one by one, straight from your heart.
-7. **Promise Coupons** 🎟️ – wrapped gifts she taps to flip open, each one a real
-   promise she can redeem from you — breakfast in bed, a no-questions-asked wish…
-8. **Grand Finale** – a full-screen favourite photo, a confetti burst, an optional voice note, and "Replay our day".
+7. **My Promises** 💍 – a sacred fire appears and she takes the **7 pheras** with
+   you, one tap at a time, revealing the saat vachan (wedding vows) one by one.
+   Then a big heart she **presses and holds** 💓 — her phone buzzes in a lub-dub
+   heartbeat that races faster the longer she holds (Android only; iPhones just
+   see the pulse).
+8. **One Lil Secret** 🎁 – a golden **scratch card** she rubs with her finger;
+   underneath is where her **real gift** is hiding in the real world.
+9. **Grand Finale** – a full-screen favourite photo with a slow zoom, fireworks, a
+   confetti burst, rolling end credits, an optional voice note, and "Replay our day".
 
 ---
 
@@ -26,10 +40,12 @@ The experience flows through eight full-screen moments:
 | The secret gate question 🔐 | `src/gate.js` (question, accepted answers, teasing hints) |
 | The birthday date | `src/components/CountdownScreen.jsx` → `BIRTHDAY_DATE` |
 | Her song 🎵 | drop `public/audio/song.mp3` (volume in `src/music.js`) |
-| Your photos (+ captions & dates) | `src/photos.js` (+ drop images in `public/photos/`) |
+| Your photos (+ captions, places & dates) | `src/photos.js` (+ drop images in `public/photos/`) |
 | Your love letter | `src/components/MessageScreen.jsx` → `MESSAGE` |
 | "Reasons I love you" | `src/reasons.js` |
-| Promise coupons 🎟️ | `src/coupons.js` (emoji, promise, playful fine print) |
+| My promises — the 7 pheras / saat vachan 🔥 | `src/vows.js` |
+| Where her real gift is hiding 🎁 | `src/gift.js` (clue, note, optional hint photo) |
+| Chapter title cards 🎬 | `src/App.jsx` → `OPENING` / `CHAPTERS` |
 | Final photo + voice note | `src/finale.js` (+ optional audio in `public/audio/`) |
 
 ### The background music

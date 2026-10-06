@@ -19,17 +19,44 @@ body,
 body {
   margin: 0;
   background-color: #100a10; /* very dark plum */
-  /* Soft warm glows layered over the dark plum base */
-  background-image:
-    radial-gradient(circle at 18% 20%, rgba(242, 160, 176, 0.09), transparent 42%),
-    radial-gradient(circle at 82% 78%, rgba(245, 200, 66, 0.08), transparent 46%),
-    radial-gradient(circle at 50% 50%, rgba(13, 6, 8, 0.55), #0d0608 92%);
-  background-attachment: fixed;
   color: #e8d5c4; /* soft cream body text */
   font-family: 'Lato', 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  /* No accidental pull-to-refresh halfway through her story (Android Chrome) */
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Soft warm glows layered over the dark plum base.
+   They sit on their own fixed layer instead of using
+   `background-attachment: fixed`, which makes the browser repaint
+   the whole screen on every scroll frame. Same look, smooth scroll. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 20%, rgba(242, 160, 176, 0.09), transparent 42%),
+    radial-gradient(circle at 82% 78%, rgba(245, 200, 66, 0.08), transparent 46%),
+    radial-gradient(circle at 50% 50%, rgba(13, 6, 8, 0.55), #0d0608 92%);
+  will-change: transform;
+}
+
+/* ── Phone-friendly touches (tuned for her Moto G67 in Chrome) ── */
+/* Full-screen scenes use the height that's visible *with* Chrome's
+   address bar showing, so nothing hides behind it or jumps around. */
+@supports (min-height: 100svh) {
+  .min-h-screen {
+    min-height: 100svh;
+  }
+}
+/* Instant taps — no double-tap-to-zoom delay on buttons */
+button,
+[role='button'] {
+  touch-action: manipulation;
 }
 
 /* Gentle rose scrollbar for the gallery screen */
@@ -91,22 +118,55 @@ body {
   }
 }
 
-/* ── (2) Countdown card pulse glow ───────────────────── */
-@keyframes card-glow {
+/* ── Pulsing glows, the smooth way ───────────────────────
+   Animating box-shadow repaints the element on every single frame,
+   which adds up on a phone. Instead, the dim glow and the bright glow
+   each live on a pseudo-element and simply cross-fade: opacity runs
+   on the GPU, and the pulse looks the same. */
+.animate-card-glow::before,
+.animate-card-glow::after,
+.animate-soft-glow::before,
+.animate-soft-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+@keyframes glow-dim {
   0%,
   100% {
-    box-shadow:
-      0 0 15px rgba(245, 200, 66, 0.12),
-      inset 0 0 12px rgba(255, 255, 255, 0.03);
+    opacity: 1;
   }
   50% {
-    box-shadow:
-      0 0 34px rgba(245, 200, 66, 0.34),
-      inset 0 0 18px rgba(255, 255, 255, 0.05);
+    opacity: 0;
   }
 }
-.animate-card-glow {
-  animation: card-glow 3.2s ease-in-out infinite;
+@keyframes glow-bright {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ── (2) Countdown card pulse glow ───────────────────── */
+/* Sits right behind each countdown card (the card clips its own
+   overflow for the rolling digits, so the glow can't live inside it) */
+.animate-card-glow::before {
+  box-shadow:
+    0 0 15px rgba(245, 200, 66, 0.12),
+    inset 0 0 12px rgba(255, 255, 255, 0.03);
+  animation: glow-dim 3.2s ease-in-out infinite;
+}
+.animate-card-glow::after {
+  box-shadow:
+    0 0 34px rgba(245, 200, 66, 0.34),
+    inset 0 0 18px rgba(255, 255, 255, 0.05);
+  animation: glow-bright 3.2s ease-in-out infinite;
 }
 
 /* ── (4) Confetti rain ───────────────────────────────── */
@@ -190,21 +250,26 @@ body {
 }
 
 /* ── (7) Soft pulsing glow for call-to-action buttons ── */
-@keyframes soft-glow {
-  0%,
-  100% {
-    box-shadow:
-      0 0 12px rgba(245, 200, 66, 0.35),
-      0 0 26px rgba(242, 160, 176, 0.25);
-  }
-  50% {
-    box-shadow:
-      0 0 26px rgba(245, 200, 66, 0.7),
-      0 0 52px rgba(242, 160, 176, 0.5);
-  }
-}
+/* (cross-fading pseudo-elements — see "Pulsing glows" above) */
 .animate-soft-glow {
-  animation: soft-glow 2.4s ease-in-out infinite;
+  position: relative;
+}
+.animate-soft-glow::before,
+.animate-soft-glow::after {
+  inset: -1px; /* the button's outer border edge, where a shadow starts */
+  z-index: -1; /* tucked underneath, just like a real box-shadow */
+}
+.animate-soft-glow::before {
+  box-shadow:
+    0 0 12px rgba(245, 200, 66, 0.35),
+    0 0 26px rgba(242, 160, 176, 0.25);
+  animation: glow-dim 2.4s ease-in-out infinite;
+}
+.animate-soft-glow::after {
+  box-shadow:
+    0 0 26px rgba(245, 200, 66, 0.7),
+    0 0 52px rgba(242, 160, 176, 0.5);
+  animation: glow-bright 2.4s ease-in-out infinite;
 }
 
 /* ── (5) General fade-in keyframe ────────────────────── */
@@ -219,6 +284,355 @@ body {
   }
 }
 
+/* ── Typewriter blinking caret (message screen) ── */
+.type-caret {
+  display: inline-block;
+  margin-left: 1px;
+  font-weight: 400;
+  color: #f5c842;
+  animation: caret-blink 0.9s step-end infinite;
+}
+@keyframes caret-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ── Finale confetti burst (fires once, outward from centre) ── */
+.confetti-burst-piece {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  will-change: transform, opacity;
+  /* `both` keeps each piece hidden until its (possibly delayed) burst begins */
+  animation: confetti-pop 1.9s ease-out both;
+}
+@keyframes confetti-pop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--bx, 0)), calc(-50% + var(--by, 0)))
+      scale(1) rotate(var(--br, 360deg));
+    opacity: 0;
+  }
+}
+
+/* ── Secret gate: gentle "no no" head-shake on a wrong answer ── */
+@keyframes gate-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-9px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+.animate-gate-shake {
+  animation: gate-shake 0.45s ease-in-out;
+}
+
+/* ── Celebration: pulsing pill while the mic listens for her breath ── */
+@keyframes mic-listen-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(242, 160, 176, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(242, 160, 176, 0);
+  }
+}
+.mic-listening {
+  animation: mic-listen-pulse 1.4s ease-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   🎬 CINEMATIC LAYER
+   Film grain, vignette, letterbox bars, chapter title cards,
+   and the slow blur-to-focus reveals that make the whole
+   site feel like a little movie made for her.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Film grain: a tiny tile of noise, jittering like real film ── */
+.film-grain {
+  position: fixed;
+  inset: -8%;
+  z-index: 80;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  animation: grain-shift 0.8s steps(5) infinite;
+}
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -4%); }
+  60% { transform: translate(-4%, -1%); }
+  80% { transform: translate(4%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── Soft vignette that darkens the edges of every scene ── */
+.cine-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(5, 2, 4, 0.55) 100%);
+}
+
+/* ── Letterbox bars: slide in between scenes, out when one begins ── */
+.letterbox {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 11vh;
+  z-index: 75;
+  pointer-events: none;
+  background: #000;
+  transform: scaleY(0);
+  transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.letterbox--top {
+  top: 0;
+  transform-origin: top;
+}
+.letterbox--bottom {
+  bottom: 0;
+  transform-origin: bottom;
+}
+.letterbox--on {
+  transform: scaleY(1);
+}
+
+/* ── Scene transitions: blur out → title card → blur back into focus ── */
+@keyframes scene-in {
+  from {
+    opacity: 0;
+    filter: blur(10px) brightness(0.6);
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+@keyframes scene-out {
+  from {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    filter: blur(8px) brightness(0.5);
+    transform: scale(0.97);
+  }
+}
+.scene-enter {
+  transform-origin: 50% 0;
+  animation: scene-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.scene-exit {
+  transform-origin: 50% 0;
+  animation: scene-out 0.9s cubic-bezier(0.55, 0, 0.45, 1) both;
+}
+
+/* ── Chapter title cards (shown between scenes, tap to skip) ── */
+.chapter-card {
+  animation: card-in 0.5s ease both;
+  -webkit-tap-highlight-color: transparent;
+}
+@keyframes card-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.chapter-inner {
+  animation: card-out 0.55s ease var(--out-at, 2.1s) forwards;
+}
+@keyframes card-out {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(1.04);
+  }
+}
+.chapter-kicker {
+  animation: rise-in 0.8s ease 0.2s both;
+}
+.chapter-line {
+  animation: line-grow 1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+}
+@keyframes line-grow {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+.chapter-title {
+  animation: title-focus 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+}
+@keyframes title-focus {
+  from {
+    opacity: 0;
+    letter-spacing: 0.25em;
+    filter: blur(12px);
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.01em;
+    filter: none;
+  }
+}
+.chapter-note {
+  animation: rise-in 0.9s ease 1.1s both;
+}
+.chapter-skip {
+  animation: card-in 1s ease 1.4s both;
+}
+
+/* ── Reusable reveals ── */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.cine-rise {
+  animation: rise-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Headings appear word by word, each one drifting into focus */
+.cine-word {
+  display: inline-block;
+  animation: word-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes word-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(0.45em);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+/* A heartbeat — for things that are waiting for her tap */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.12); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.08); }
+  70% { transform: scale(1); }
+}
+.animate-heartbeat {
+  animation: heartbeat 1.6s ease-in-out infinite;
+}
+
+/* ── Secret gate: a burst of golden light when the lock opens ── */
+.flare-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 250, 235, 0.95) 0%, rgba(245, 200, 66, 0.6) 30%, rgba(242, 160, 176, 0.25) 55%, transparent 70%);
+  animation: flare 1.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes flare {
+  0% { transform: scale(0); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(14); opacity: 0; }
+}
+
+/* ── Countdown: rolling digits + the dramatic final ten seconds ── */
+.digit-roll {
+  display: inline-block;
+  animation: digit-roll 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes digit-roll {
+  from {
+    opacity: 0;
+    transform: translateY(-45%);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.final-count {
+  animation: final-count 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes final-count {
+  0% { opacity: 0; transform: scale(2.2); filter: blur(14px); }
+  25% { opacity: 1; transform: scale(1); filter: none; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.85); }
+}
+
+/* ── Celebration: lights off → candlelight → lights ON ── */
+.room-dark {
+  background: radial-gradient(circle at 50% 52%, rgba(255, 170, 80, 0.14) 0%, rgba(8, 3, 6, 0.55) 26%, rgba(4, 1, 3, 0.92) 70%);
+  transition: opacity 1.8s ease;
+}
+.candle-glow {
+  background: radial-gradient(circle, rgba(255, 190, 90, 0.45), rgba(255, 140, 60, 0.12) 45%, transparent 70%);
+  animation: candle-glow 2.2s ease-in-out infinite;
+}
+@keyframes candle-glow {
+  0%, 100% { opacity: 0.75; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.06); }
+}
+.flash-burst {
+  background: radial-gradient(circle at 50% 40%, rgba(255, 250, 240, 0.95), rgba(245, 200, 66, 0.55) 40%, transparent 75%);
+  animation: flash 1.1s ease-out forwards;
+}
+@keyframes flash {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.title-slam {
+  animation: title-slam 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes title-slam {
+  0% { opacity: 0; transform: scale(1.6); filter: blur(16px); }
+  60% { opacity: 1; filter: none; }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
 /* ── Photo gallery: polaroid frames + tap-through card deck ─── */
 .polaroid {
   background: #fffdf9;
@@ -230,6 +644,7 @@ body {
     0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 .polaroid__frame {
+  position: relative; /* anchors the light-leak sweep */
   overflow: hidden;
   background: #e9e0d6; /* soft cream behind the photo */
   border-radius: 2px;
@@ -240,6 +655,8 @@ body {
   height: auto;
   max-height: 46vh;
   object-fit: contain;
+  /* eases the photo back to full size as she reveals it */
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .polaroid__caption {
   font-family: 'Dancing Script', cursive;
@@ -309,131 +726,508 @@ body {
   color: #9a7d70;
 }
 
-/* ── Typewriter blinking caret (message screen) ── */
-.type-caret {
-  display: inline-block;
-  margin-left: 1px;
-  font-weight: 400;
-  color: #f5c842;
-  animation: caret-blink 0.9s step-end infinite;
+/* ── Gallery: tap to reveal 👀 ──
+   Every photo (and the ones peeking behind it) waits behind a soft blur,
+   with its caption still unwritten, until she taps the top one. */
+.photo-hidden {
+  filter: blur(18px) brightness(0.7) saturate(1.2);
+  transform: scale(1.18);
 }
-@keyframes caret-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+.caption-hidden {
+  opacity: 0;
 }
-
-/* ── Finale confetti burst (fires once, outward from centre) ── */
-.confetti-burst-piece {
-  position: absolute;
-  left: 50%;
-  top: 45%;
-  will-change: transform, opacity;
-  animation: confetti-pop 1.9s ease-out forwards;
-}
-@keyframes confetti-pop {
-  0% {
-    transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
-    opacity: 1;
-  }
-  15% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(-50% + var(--bx, 0)), calc(-50% + var(--by, 0)))
-      scale(1) rotate(var(--br, 360deg));
-    opacity: 0;
-  }
-}
-
-/* ── Secret gate: gentle "no no" head-shake on a wrong answer ── */
-@keyframes gate-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-9px);
-  }
-  40% {
-    transform: translateX(8px);
-  }
-  60% {
-    transform: translateX(-6px);
-  }
-  80% {
-    transform: translateX(4px);
-  }
-}
-.animate-gate-shake {
-  animation: gate-shake 0.45s ease-in-out;
-}
-
-/* ── Celebration: pulsing pill while the mic listens for her breath ── */
-@keyframes mic-listen-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(242, 160, 176, 0.45);
-  }
-  70% {
-    box-shadow: 0 0 0 14px rgba(242, 160, 176, 0);
-  }
-}
-.mic-listening {
-  animation: mic-listen-pulse 1.4s ease-out infinite;
-}
-
-/* ── Promise coupons: wrapped gifts that flip open in 3D ── */
-.coupon-flip {
-  perspective: 1100px;
-  -webkit-tap-highlight-color: transparent;
-}
-.coupon-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.34, 1.3, 0.5, 1);
-  will-change: transform;
-}
-.coupon-inner--flipped {
-  transform: rotateY(180deg);
-}
-/* Gentle wobble on the still-wrapped gifts, inviting a tap */
-.coupon-flip:not(:disabled):hover .coupon-inner {
-  transform: rotateY(12deg) scale(1.02);
-}
-.coupon-face {
+.photo-veil {
   position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 1.25rem;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+  animation: card-in 0.6s ease both;
+}
+.photo-veil--gone {
+  pointer-events: none;
+  animation: veil-out 0.5s ease forwards;
+}
+@keyframes veil-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* ── Gallery: each photo "develops" like a real polaroid ── */
+.photo-develop {
+  transform-origin: 50% 40%;
+  animation:
+    polaroid-develop 2.4s ease-out both,
+    ken-burns 16s ease-in-out 2.4s infinite alternate;
+}
+@keyframes polaroid-develop {
+  0% { filter: brightness(2.2) contrast(0.35) sepia(0.7) saturate(0.2) blur(6px); }
+  45% { filter: brightness(1.3) contrast(0.8) sepia(0.4) saturate(0.6) blur(1.5px); }
+  100% { filter: none; }
+}
+@keyframes ken-burns {
+  from { transform: scale(1); }
+  to { transform: scale(1.07) translate(-1%, -1%); }
+}
+.light-leak {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 196, 140, 0.55) 45%, rgba(255, 120, 150, 0.35) 55%, transparent 75%);
+  mix-blend-mode: screen;
+  animation: light-leak 1.8s ease-out 0.3s both;
+}
+@keyframes light-leak {
+  from { transform: translateX(-110%); opacity: 1; }
+  to { transform: translateX(110%); opacity: 0.2; }
+}
+.caption-reveal {
+  animation: rise-in 1s ease 1.1s both;
+}
+
+/* ── Love letter: a sealed envelope she opens herself ── */
+.envelope {
+  position: relative;
+  width: min(82vw, 330px);
+  aspect-ratio: 3 / 2;
+  perspective: 900px;
+  -webkit-tap-highlight-color: transparent;
+}
+.envelope__back {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #e8899b, #c96a7e);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
+}
+.envelope__letter {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 7%;
+  height: 86%;
+  z-index: 2;
+  border-radius: 6px;
+  background: repeating-linear-gradient(180deg, #fffdf9 0 22px, #f1e6dc 22px 23px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s;
+}
+.envelope__pocket {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 12px;
+  background: linear-gradient(165deg, #f3b7c6, #e8899b);
+  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+}
+.envelope__flap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 56%;
+  z-index: 4;
+  border-radius: 12px 12px 0 0;
+  transform-origin: 50% 0;
+  background: linear-gradient(180deg, #f6c6d2, #e79aab);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transition:
+    transform 0.75s cubic-bezier(0.65, 0, 0.35, 1),
+    z-index 0s linear 0.4s;
+}
+.envelope__seal {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  z-index: 5;
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #f5c842;
+  font-size: 1.4rem;
+  background: radial-gradient(circle at 35% 35%, #d2455c, #8e1f33 70%);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.12);
+  transition:
+    transform 0.5s ease,
+    opacity 0.5s ease;
+}
+.envelope--open .envelope__flap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+.envelope--open .envelope__letter {
+  transform: translateY(-48%);
+}
+.envelope--open .envelope__seal {
+  transform: scale(1.6);
+  opacity: 0;
+}
+.envelope-away {
+  animation: envelope-away 0.9s cubic-bezier(0.55, 0, 0.45, 1) forwards;
+}
+@keyframes envelope-away {
+  to {
+    opacity: 0;
+    transform: translateY(-30px) scale(1.15);
+    filter: blur(6px);
+  }
+}
+/* The letter's words appear phrase by phrase, like ink drying on paper */
+.ink-in {
+  animation: ink-in 1.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ink-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+/* ── Reasons & vows: cards rise into focus with a golden sheen ── */
+.cine-card {
+  position: relative;
+  overflow: hidden;
+  animation: card-rise 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.96);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.cine-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(245, 200, 66, 0.18) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: sheen 1.6s ease 0.4s forwards;
+}
+@keyframes sheen {
+  to { transform: translateX(100%); }
+}
+
+/* ── Saat vachan: the sacred fire (agni) she walks the pheras around ── */
+.agni {
+  /* Shrinks a little on shorter screens so fire + vow + button fit together */
+  --agni: min(210px, 26vh);
+  position: relative;
+  width: var(--agni);
+  height: var(--agni);
+}
+.agni__glow {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 58%, rgba(255, 150, 60, 0.45), rgba(255, 90, 40, 0.12) 45%, transparent 68%);
+  animation: agni-glow 2.4s ease-in-out infinite;
+  transition: opacity 0.8s ease;
+}
+@keyframes agni-glow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+.agni__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(245, 200, 66, 0.35);
+}
+.agni__dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: rgba(232, 213, 196, 0.18);
+  border: 1px solid rgba(245, 200, 66, 0.4);
+  transform: rotate(var(--a)) translateY(calc(var(--agni) / -2));
+  transition:
+    background 0.6s ease,
+    box-shadow 0.6s ease;
+}
+.agni__dot--lit {
+  background: #f5c842;
+  box-shadow: 0 0 12px 3px rgba(245, 200, 66, 0.7);
+}
+.agni__orbit {
+  position: absolute;
+  inset: 0;
+}
+.agni__walker {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+.agni__orbit--go {
+  animation: phera 1.8s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+.agni__orbit--go .agni__walker {
+  animation: phera-upright 1.8s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+@keyframes phera {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes phera-upright {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+.agni__fire {
+  position: absolute;
+  left: 50%;
+  bottom: 40%;
+  width: 0;
+  height: 0;
+}
+.flame {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%;
+  transform-origin: 50% 100%;
+}
+.flame--outer {
+  width: 58px;
+  height: 86px;
+  margin-left: -29px;
+  background: radial-gradient(ellipse at 50% 85%, rgba(255, 120, 40, 0.95), rgba(255, 60, 20, 0.6) 55%, transparent 72%);
+  animation: flame-dance 1.3s ease-in-out infinite alternate;
+}
+.flame--mid {
+  width: 40px;
+  height: 64px;
+  margin-left: -20px;
+  background: radial-gradient(ellipse at 50% 85%, #ffd166, rgba(255, 140, 40, 0.85) 55%, transparent 74%);
+  animation: flame-dance 0.9s ease-in-out infinite alternate-reverse;
+}
+.flame--core {
+  width: 22px;
+  height: 36px;
+  margin-left: -11px;
+  background: radial-gradient(ellipse at 50% 80%, #fffbe6, #ffe08a 50%, transparent 75%);
+  animation: flame-dance 0.7s ease-in-out infinite alternate;
+}
+@keyframes flame-dance {
+  0% { transform: scaleY(1) scaleX(1) rotate(-2deg); }
+  50% { transform: scaleY(1.12) scaleX(0.94) rotate(2deg); }
+  100% { transform: scaleY(0.95) scaleX(1.05) rotate(-1deg); }
+}
+.ember {
+  position: absolute;
+  bottom: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffd166;
+  box-shadow: 0 0 6px 1px rgba(255, 170, 60, 0.9);
+  animation: ember-rise 2.6s ease-out infinite;
+}
+@keyframes ember-rise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(var(--dx, 0), -90px); opacity: 0; }
+}
+.agni__kund {
+  position: absolute;
+  left: 50%;
+  bottom: 30%;
+  width: 96px;
+  height: 34px;
+  margin-left: -48px;
+  background: linear-gradient(180deg, #d8954a, #8a531f);
+  clip-path: polygon(0 0, 100% 0, 84% 100%, 16% 100%);
+}
+
+/* ── 💓 Heartbeat hold: press n hold the heart, feel it beat ── */
+.hb-heart {
+  position: relative;
+  display: block;
+  width: 8.5rem;
+  height: 8.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: none; /* holding must never turn into a scroll */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none; /* no long-press menu on her phone */
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hb-heart--held {
+  transform: scale(0.94); /* pressed in, under her thumb */
+}
+.hb-heart svg {
+  filter: drop-shadow(0 6px 18px rgba(210, 69, 92, 0.55));
+}
+.hb-glow {
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 120, 150, 0.45), rgba(242, 160, 176, 0.12) 45%, transparent 70%);
+  transition: opacity 0.6s ease;
+}
+/* One lub-dub, timed to the buzz: lub at ~60ms, dub at ~200ms */
+.hb-pulse {
+  animation: lub-dub 0.5s ease-out both;
+}
+@keyframes lub-dub {
+  0% { transform: scale(1); }
+  12% { transform: scale(1.16); }
+  26% { transform: scale(1.02); }
+  40% { transform: scale(1.11); }
+  70%, 100% { transform: scale(1); }
+}
+.hb-ring {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 2px solid rgba(242, 160, 176, 0.6);
+  pointer-events: none;
+  animation: hb-ring 1s ease-out forwards;
+}
+@keyframes hb-ring {
+  from { transform: scale(0.6); opacity: 0.9; }
+  to { transform: scale(1.9); opacity: 0; }
+}
+/* The edges of the screen flush rosy with every beat */
+.hb-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(214, 51, 92, 0.32) 100%);
+  animation: hb-screen 0.6s ease-out both;
+}
+@keyframes hb-screen {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  26% { opacity: 0.35; }
+  40% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+/* ── 🎁 Gift reveal: a golden scratch card ── */
+.scratch-card {
+  position: relative;
+  overflow: hidden;
   border-radius: 1rem;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  border: 1px solid rgba(245, 200, 66, 0.4);
+  background: radial-gradient(circle at 50% 40%, #2c1622, #140a10 80%);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
 }
-/* Front: gift-wrap in blush + gold, with a ribbon cross */
-.coupon-face--front {
-  background:
-    /* the ribbon: one vertical + one horizontal gold band */
-    linear-gradient(90deg, transparent 0 calc(50% - 7px), rgba(245, 200, 66, 0.85) calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px)),
-    linear-gradient(0deg, transparent 0 calc(50% - 7px), rgba(245, 200, 66, 0.85) calc(50% - 7px) calc(50% + 7px), transparent calc(50% + 7px)),
-    linear-gradient(135deg, #f3b7c6, #e8899b);
-  box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+.scratch-foil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: none; /* rubbing must never turn into a scroll */
+  -webkit-user-select: none;
+  user-select: none;
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.9s ease;
 }
-/* Back: the ivory coupon itself, like a little paper ticket */
-.coupon-face--back {
-  transform: rotateY(180deg);
-  background: #fffdf9;
-  box-shadow:
-    0 10px 26px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
-    inset 0 0 0 6px #fffdf9,
-    inset 0 0 0 7px rgba(180, 138, 122, 0.45); /* thin inner ticket border */
+.scratch-foil--gone {
+  opacity: 0;
+  transform: scale(1.08);
+  filter: blur(6px);
+  pointer-events: none;
+}
+/* A glint of light sweeping across the untouched gold */
+.scratch-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  animation: foil-sheen 2.8s ease-in-out 1.6s infinite;
+  transform: translateX(-100%);
+}
+@keyframes foil-sheen {
+  0% { transform: translateX(-100%); }
+  45%, 100% { transform: translateX(100%); }
+}
+
+/* ── Grand finale: slow zoom on her photo, fireworks, end credits ── */
+.finale-photo {
+  animation:
+    fade-only 2.8s ease both,
+    finale-zoom 18s cubic-bezier(0.2, 0.6, 0.2, 1) both;
+}
+@keyframes fade-only {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes finale-zoom {
+  from { transform: scale(1.18); }
+  to { transform: scale(1); }
+}
+.firework {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.firework span {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: firework 2.8s ease-out infinite;
+}
+@keyframes firework {
+  0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 0; }
+  6% { opacity: 1; }
+  60% { opacity: 1; }
+  100% { transform: rotate(var(--a)) translateY(var(--d)) scale(0.3); opacity: 0; }
+}
+.credits-window {
+  height: 9.5rem;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+  mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+}
+.credits-roll {
+  animation: credits-roll 28s linear infinite;
+}
+@keyframes credits-roll {
+  from { transform: translateY(9.5rem); }
+  to { transform: translateY(-100%); }
 }
 
 /* Kindly respect users who prefer reduced motion */
@@ -445,5 +1239,14 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  /* Credits can't roll — just show them all */
+  .credits-roll {
+    animation: none !important;
+  }
+  .credits-window {
+    height: auto;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }

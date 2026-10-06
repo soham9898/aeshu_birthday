@@ -9,11 +9,11 @@
 // ─────────────────────────────────────────────────────
 
 const reasons = [
-  'The way your eyes light up when you laugh.',
-  'How you make even the most ordinary day feel like an adventure.',
-  'Your kindness — especially to people who could never repay it.',
-  'The way you say my name when you are happy.',
-  'That you chose me… and keep choosing me, every single day.',
+  'the way ur eyes light up when u laugh 🥹✨',
+  'u make even the most boring day feel like a whole adventure 🎢',
+  'ur kindness… even to ppl who can never repay it 🤍',
+  'the way u say my name when ur happy 🙈',
+  'u chose me… n u keep choosing me, every single day 💛',
 ];
 
 export default reasons;

@@ -20,12 +20,12 @@
 
 export const GATE_ENABLED = true;
 
-export const GATE_QUESTION = 'What does Soham lovingly call you? 💛';
+export const GATE_QUESTION = 'wht does soham lovingly call u? 🙈💛';
 
 export const GATE_ANSWERS = ['aeshu', 'aeshuu', 'aeshuuu'];
 
 export const GATE_HINTS = [
-  'Hmm… try again, my love 💭',
-  'You know this one! Think of how I call you 💛',
-  'Okay okay — it starts with "Ae…" 😉',
+  'hmm nope… try again my luv 💭',
+  'uh-ohh 🙈 u knw this one!! think how i call u 💛',
+  'okayy okayy hint: it starts with "Ae…" 😉',
 ];

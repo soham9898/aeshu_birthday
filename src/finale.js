@@ -14,8 +14,8 @@
 //   4. Leave it as ''  (empty)  to simply hide the play button.
 // ─────────────────────────────────────────────────────
 
-export const favoritePhoto = '/aeshu_birthday/photos/photo1.jpg';
+export const favoritePhoto = '/aeshu_birthday/photos/finale-forever.jpg';
 
-export const finaleHeading = 'Happy Birthday, my love';
+export const finaleHeading = 'happyyy birthday, my jaan';
 
 export const voiceNote = ''; // e.g. '/aeshu_birthday/audio/voice-note.mp3'
