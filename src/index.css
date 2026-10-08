@@ -189,6 +189,41 @@ button,
   }
 }
 
+/* ── Pushpa varsha 🌸: petals drift down once, swaying side to side ── */
+.confetti-piece.petal-fall {
+  animation-name: petal-fall;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+}
+@keyframes petal-fall {
+  /* starts just above the screen (top: -12vh), so the first petals show up quickly */
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  6%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--drift, 0), 118vh);
+    opacity: 0;
+  }
+}
+/* The flutter: a slow side-to-side sway that tips the petal as it goes */
+.petal-sway {
+  display: block;
+  animation: petal-sway 2.4s ease-in-out infinite alternate;
+}
+@keyframes petal-sway {
+  from {
+    transform: translateX(calc(var(--sway, 20px) * -1)) rotate(-25deg) rotateY(0deg);
+  }
+  to {
+    transform: translateX(var(--sway, 20px)) rotate(30deg) rotateY(55deg);
+  }
+}
+
 /* ── (3) Candle flame flicker + blow-out ─────────────── */
 @keyframes flicker {
   0%,
@@ -248,6 +283,23 @@ button,
 }
 .smoke {
   animation: smoke-rise 1.1s ease-out forwards;
+}
+
+/* Number candles (her age): chunky wax numerals in the same
+   pink-n-white stripes as the cake, with a soft wax edge */
+.number-candle {
+  display: block;
+  font-family: 'Lato', 'Inter', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 4rem;
+  line-height: 0.75;
+  color: transparent;
+  background: repeating-linear-gradient(45deg, #f2a0b0 0 6px, #fbd4dd 6px 12px);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1.5px #e07a97;
+  filter: drop-shadow(0 2px 0 rgba(150, 50, 80, 0.35));
+  user-select: none;
 }
 
 /* ── Sparkle / heart burst on candle blow-out ────────── */

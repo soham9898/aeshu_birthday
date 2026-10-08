@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import vows, { VOWS_CLOSING } from '../vows.js';
 import CineText from './CineText.jsx';
 import HeartbeatHold from './HeartbeatHold.jsx';
+import FlowerShower from './FlowerShower.jsx';
 
 // ─────────────────────────────────────────────────────
 // My Promises to You 💍 — the saat vachan.
@@ -10,6 +11,8 @@ import HeartbeatHold from './HeartbeatHold.jsx';
 // of you (💑) walk once around the fire, a lamp lights up, and
 // one wedding vow appears. After the 7th, a heart she presses
 // n holds to feel it beat 💓, then all 7 vows together.
+// The moment the 7th phera is done, flowers shower down on
+// the two of them 🌸 — just like at a real wedding.
 //
 // Edit the vows in src/vows.js.
 // ─────────────────────────────────────────────────────
@@ -129,6 +132,9 @@ export default function PromisesScreen({ onNext }) {
 
   return (
     <section className="flex min-h-screen w-full flex-col items-center justify-center px-5 py-12 text-center sm:px-6 sm:py-16">
+      {/* 🌸 Pushpa varsha — flowers rain down after the 7th phera */}
+      {allTaken && <FlowerShower />}
+
       <div className="flex w-full max-w-md flex-col items-center">
         <p className="cine-rise mb-3 font-sans text-xs uppercase tracking-[0.35em] text-blush/80 sm:text-sm">
           saat fere, saat vachan 🔥

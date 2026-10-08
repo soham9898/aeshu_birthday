@@ -21,7 +21,11 @@ const CONFETTI_COLORS = [
   '#c792ea',
   '#ffd479',
 ];
-const CANDLES = [0, 1, 2, 3, 4];
+
+// 🎂 Her age, as number candles — one wax numeral per digit ("2" "2"),
+// each with its own flame. Change this if you reuse the site next year.
+const HER_AGE = 22;
+const CANDLES = String(HER_AGE).split('');
 
 // ── Microphone "blow" tuning ──────────────────────────
 // She can blow into her phone for real 🎤 — the mic listens for a
@@ -30,7 +34,8 @@ const CANDLES = [0, 1, 2, 3, 4];
 // background…) so only a real blow counts — never just chatter.
 const BLOW_THRESHOLD = 0.18; // loudness (RMS 0–1) that counts as blowing in a quiet room
 const MAX_THRESHOLD = 0.32; // the highest a noisy room can push that bar
-const BLOW_MS_PER_CANDLE = 240; // sustained blow time to douse each candle
+const BLOW_MS_TOTAL = 1200; // sustained blow time to douse every candle
+const BLOW_MS_PER_CANDLE = BLOW_MS_TOTAL / CANDLES.length;
 const TIP_AFTER_MS = 7000; // still no proper blow? show her where the mic is
 const TAP_WHOOSH_MS = 200; // tap fallback: flames bend away first…
 const TAP_STAGGER_MS = 110; // …then go out one after another
@@ -407,15 +412,15 @@ export default function CelebrationScreen({ onNext }) {
               </div>
             )}
 
-            {/* Candles — the flames bend with her breath, then each goes
-                dark (with a wisp of smoke) as she keeps blowing */}
-            <div className="relative z-30 mb-[-6px] flex gap-4 sm:gap-5">
-              {CANDLES.map((c) => (
-                <div key={c} className="relative flex flex-col items-center">
-                  {c >= outCount ? (
+            {/* Number candles (her age) — the flames bend with her breath,
+                then each goes dark (with a wisp of smoke) as she keeps blowing */}
+            <div className="relative z-30 mb-[-8px] flex items-end gap-1.5">
+              {CANDLES.map((digit, i) => (
+                <div key={i} className="relative flex flex-col items-center">
+                  {i >= outCount ? (
                     <span
                       className="flame-lean"
-                      style={{ '--lean': `${26 + ((c * 7) % 12)}deg` }}
+                      style={{ '--lean': `${26 + ((i * 7) % 12)}deg` }}
                     >
                       <span
                         className="candle-flame block h-full w-full rounded-full"
@@ -436,14 +441,9 @@ export default function CelebrationScreen({ onNext }) {
                       }}
                     />
                   )}
-                  {/* Wax stick */}
-                  <div
-                    className="h-9 w-2.5 rounded-sm"
-                    style={{
-                      background:
-                        'repeating-linear-gradient(45deg,#f2a0b0 0 6px,#fbd4dd 6px 12px)',
-                    }}
-                  />
+                  {/* Wick + the wax numeral */}
+                  <span className="h-1.5 w-[2px] rounded-full bg-[#5a4636]" />
+                  <span className="number-candle">{digit}</span>
                 </div>
               ))}
             </div>
