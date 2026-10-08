@@ -1,13 +1,16 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { startMusic } from './MusicPlayer.jsx';
+import { primeMusic, startMusic } from './MusicPlayer.jsx';
 import CineText from './CineText.jsx';
 
 // ─────────────────────────────────────────────────────
 // The celebration 🎂 — played like a movie scene:
 //   1. Lights off. Only the candles glow. "make a wish…"
 //   2. She blows (for real, into the mic — or with a tap).
-//   3. A flash of light, the room lights up, the big
-//      "Happy Birthday" lands, and the confetti starts.
+//      The flames bend n shrink with her breath, then go
+//      out one by one, each with a wisp of smoke.
+//   3. A flash of light, the room lights up, her song
+//      starts, the big "Happy Birthday" lands, and the
+//      confetti starts.
 // ─────────────────────────────────────────────────────
 
 const CONFETTI_COLORS = [
@@ -23,8 +26,14 @@ const CANDLES = [0, 1, 2, 3, 4];
 // ── Microphone "blow" tuning ──────────────────────────
 // She can blow into her phone for real 🎤 — the mic listens for a
 // sustained rush of air and puts the candles out one by one.
-const BLOW_THRESHOLD = 0.18; // loudness (RMS 0–1) that counts as blowing
+// The bar rises on its own in a noisy room (a party, music in the
+// background…) so only a real blow counts — never just chatter.
+const BLOW_THRESHOLD = 0.18; // loudness (RMS 0–1) that counts as blowing in a quiet room
+const MAX_THRESHOLD = 0.32; // the highest a noisy room can push that bar
 const BLOW_MS_PER_CANDLE = 240; // sustained blow time to douse each candle
+const TIP_AFTER_MS = 7000; // still no proper blow? show her where the mic is
+const TAP_WHOOSH_MS = 200; // tap fallback: flames bend away first…
+const TAP_STAGGER_MS = 110; // …then go out one after another
 
 // Little decorative sprinkles ("jimmies") scattered on the cake tiers.
 const TOP_SPRINKLES = [
@@ -57,15 +66,24 @@ function Sprinkle({ l, t, c, r }) {
 export default function CelebrationScreen({ onNext }) {
   // How many candles are out (left to right). All out = blown.
   const [outCount, setOutCount] = useState(0);
-  // 'idle' → 'listening' (mic live) → or 'failed' (denied / unsupported)
+  // 'idle' → 'asking' (permission prompt up) → 'listening' (mic live)
+  //   → or 'failed' (denied / unsupported)
   const [micState, setMicState] = useState('idle');
+  const [showTip, setShowTip] = useState(false);
   const blown = outCount >= CANDLES.length;
 
+  const cakeRef = useRef(null); // carries --blow (0–1) down to the flames
   const streamRef = useRef(null);
   const audioCtxRef = useRef(null);
   const rafRef = useRef(0);
+  const micSession = useRef(0); // bumps on every stop → cancels a pending mic request
+  const tapTimers = useRef([]);
+  const tapped = useRef(false);
+
+  const setBlow = (level) => cakeRef.current?.style.setProperty('--blow', level);
 
   const stopMic = useCallback(() => {
+    micSession.current += 1;
     cancelAnimationFrame(rafRef.current);
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
@@ -73,23 +91,52 @@ export default function CelebrationScreen({ onNext }) {
     audioCtxRef.current = null;
   }, []);
 
-  // Never leave the mic running if she moves on mid-listen.
-  useEffect(() => stopMic, [stopMic]);
+  // Never leave the mic (or a half-finished whoosh) running if she moves on.
+  useEffect(
+    () => () => {
+      stopMic();
+      tapTimers.current.forEach(clearTimeout);
+    },
+    [stopMic]
+  );
 
-  // Fallback: one tap puts them all out at once.
+  // The moment the last candle goes out: lights on, n her song begins 🎵
+  useEffect(() => {
+    if (blown) startMusic();
+  }, [blown]);
+
+  // Fallback: one tap is a big "whoosh" — the flames bend away,
+  // then go out one after another.
   const blowByTap = () => {
+    if (tapped.current) return;
+    tapped.current = true;
     stopMic();
-    startMusic(); // inside the tap, so the browser allows sound
-    setOutCount(CANDLES.length);
+    primeMusic(); // inside the tap, so the browser allows sound later
+    setBlow(1);
+    CANDLES.forEach((_, i) => {
+      tapTimers.current.push(
+        setTimeout(
+          () => setOutCount((c) => Math.max(c, i + 1)),
+          TAP_WHOOSH_MS + i * TAP_STAGGER_MS
+        )
+      );
+    });
   };
 
-  // The real magic: listen to the mic and douse candles as she blows.
+  // The real magic: listen to the mic, bend the flames with her
+  // breath, and douse the candles one by one as she keeps blowing.
   const blowByBreath = async () => {
-    startMusic(); // start her song on this tap too
-    if (!navigator.mediaDevices?.getUserMedia || !window.AudioContext) {
+    if (micState !== 'idle' || tapped.current) return;
+    // Her song waits for the candles to go out (so the speaker can't
+    // "blow" them for her) — warm it up now, while we have her tap.
+    primeMusic();
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!navigator.mediaDevices?.getUserMedia || !AudioCtx) {
       setMicState('failed');
       return;
     }
+    setMicState('asking');
+    const session = micSession.current;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         // Raw-ish audio: a rush of breath must reach us un-"cleaned".
@@ -99,11 +146,17 @@ export default function CelebrationScreen({ onNext }) {
           autoGainControl: false,
         },
       });
+      // She tapped instead (or left) while the permission prompt was up.
+      if (session !== micSession.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
       streamRef.current = stream;
 
-      const ctx = new AudioContext();
+      const ctx = new AudioCtx();
       audioCtxRef.current = ctx;
       await ctx.resume();
+      if (session !== micSession.current) return;
 
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 1024;
@@ -112,8 +165,13 @@ export default function CelebrationScreen({ onNext }) {
 
       setMicState('listening');
 
+      let floor = 0.02; // the room's own background noise, learned as we listen
       let blowMs = 0; // how long she has been blowing (decays when she stops)
-      let last = performance.now();
+      let level = 0; // smoothed breath strength 0–1 → how far the flames bend
+      let out = 0;
+      let tipShown = false;
+      const startedAt = performance.now();
+      let last = startedAt;
 
       const tick = (now) => {
         analyser.getByteTimeDomainData(samples);
@@ -124,26 +182,46 @@ export default function CelebrationScreen({ onNext }) {
         }
         const rms = Math.sqrt(sum / samples.length);
 
-        const dt = now - last;
+        const dt = Math.min(now - last, 100);
         last = now;
-        blowMs = rms > BLOW_THRESHOLD ? blowMs + dt : Math.max(0, blowMs - dt * 2);
 
+        const threshold = Math.min(MAX_THRESHOLD, Math.max(BLOW_THRESHOLD, floor * 3));
+        const blowing = rms > threshold;
+        if (!blowing) floor += (rms - floor) * 0.02; // slowly learn the room
+        blowMs = blowing ? blowMs + dt : Math.max(0, blowMs - dt * 2);
+
+        // Flames answer every breath — even a soft one bends them a lil.
+        const target = Math.min(
+          1,
+          Math.max(0, (rms - floor * 1.5) / Math.max(0.05, threshold * 1.4 - floor * 1.5))
+        );
+        level += (target - level) * (target > level ? 0.45 : 0.12);
+        setBlow(level.toFixed(3));
+
+        // Candles only ever go out — a pause never relights them.
         const shouldBeOut = Math.min(
           CANDLES.length,
           Math.floor(blowMs / BLOW_MS_PER_CANDLE)
         );
-        // Candles only ever go out — a pause never relights them.
-        if (shouldBeOut > 0) setOutCount((c) => Math.max(c, shouldBeOut));
-
-        if (shouldBeOut >= CANDLES.length) {
+        if (shouldBeOut > out) {
+          out = shouldBeOut;
+          setOutCount((c) => Math.max(c, out));
+        }
+        if (out >= CANDLES.length) {
           stopMic();
           return;
+        }
+
+        if (!tipShown && now - startedAt > TIP_AFTER_MS) {
+          tipShown = true;
+          setShowTip(true);
         }
         rafRef.current = requestAnimationFrame(tick);
       };
       rafRef.current = requestAnimationFrame(tick);
     } catch {
       // Permission denied or no mic — the tap button still works.
+      if (session !== micSession.current) return;
       stopMic();
       setMicState('failed');
     }
@@ -292,11 +370,16 @@ export default function CelebrationScreen({ onNext }) {
 
         {/* ── The cake (scales down slightly on small phones) ── */}
         <div className="cine-rise" style={{ animationDelay: '0.2s' }}>
-          <div className="relative mb-6 flex scale-[0.9] flex-col items-center sm:mb-8 sm:scale-100">
-            {/* Warm candlelight glowing in the dark room */}
+          <div
+            ref={cakeRef}
+            className="relative mb-6 flex scale-[0.9] flex-col items-center sm:mb-8 sm:scale-100"
+          >
+            {/* Warm candlelight glowing in the dark room —
+                it flickers with her breath n fades as each candle goes out */}
             {!blown && (
               <div
                 className="candle-glow pointer-events-none absolute -top-24 left-1/2 h-64 w-64 rounded-full"
+                style={{ '--lit': (CANDLES.length - outCount) / CANDLES.length }}
                 aria-hidden="true"
               />
             )}
@@ -324,21 +407,25 @@ export default function CelebrationScreen({ onNext }) {
               </div>
             )}
 
-            {/* Candles — each goes dark (with a wisp of smoke) as she blows */}
+            {/* Candles — the flames bend with her breath, then each goes
+                dark (with a wisp of smoke) as she keeps blowing */}
             <div className="relative z-30 mb-[-6px] flex gap-4 sm:gap-5">
               {CANDLES.map((c) => (
                 <div key={c} className="relative flex flex-col items-center">
                   {c >= outCount ? (
                     <span
-                      className="candle-flame absolute -top-[18px] left-1/2 h-4 w-2.5 rounded-full"
-                      style={{
-                        transform: 'translateX(-50%)',
-                        transformOrigin: 'center bottom',
-                        background:
-                          'radial-gradient(ellipse at 50% 70%, #fff2c0 0%, #ffd166 45%, #ff8c42 85%)',
-                        boxShadow: '0 0 12px 4px rgba(255,180,80,0.7)',
-                      }}
-                    />
+                      className="flame-lean"
+                      style={{ '--lean': `${26 + ((c * 7) % 12)}deg` }}
+                    >
+                      <span
+                        className="candle-flame block h-full w-full rounded-full"
+                        style={{
+                          background:
+                            'radial-gradient(ellipse at 50% 70%, #fff2c0 0%, #ffd166 45%, #ff8c42 85%)',
+                          boxShadow: '0 0 12px 4px rgba(255,180,80,0.7)',
+                        }}
+                      />
+                    </span>
                   ) : (
                     <span
                       className="smoke absolute -top-[18px] left-1/2 h-4 w-2 rounded-full"
@@ -432,8 +519,14 @@ export default function CelebrationScreen({ onNext }) {
             <p className="mic-listening flex items-center gap-3 rounded-full border border-blush/40 bg-blush/10 px-7 py-3 font-sans text-base font-semibold tracking-wide text-blush">
               <span className="text-lg">🎤</span> i'm listening… blowww! 🌬️
             </p>
-            <p className="font-sans text-xs text-cream/60">
-              hold ur phone close n blow like it's a real cake 🎂
+            {/* After a while with no real blow, a lil tip on where to aim */}
+            <p
+              key={showTip ? 'tip' : 'ask'}
+              className="animate-fade-in max-w-xs font-sans text-xs text-cream/60"
+            >
+              {showTip
+                ? 'psst… the mic is at the bottom of ur phone — blow right there 😉'
+                : "hold ur phone close n blow like it's a real cake 🎂"}
             </p>
             <button
               onClick={blowByTap}
@@ -449,14 +542,18 @@ export default function CelebrationScreen({ onNext }) {
           >
             <button
               onClick={blowByBreath}
-              disabled={micState === 'failed'}
+              disabled={micState !== 'idle'}
               className={`rounded-full border px-7 py-3 font-sans text-base font-semibold tracking-wide transition-transform duration-300 ${
                 micState === 'failed'
                   ? 'hidden'
+                  : micState === 'asking'
+                  ? 'border-gold/30 bg-gold/5 text-gold/70'
                   : 'animate-soft-glow border-gold/40 bg-gold/10 text-gold hover:scale-105 hover:bg-gold/20 active:scale-95'
               }`}
             >
-              blow into ur phone — for real 🎤
+              {micState === 'asking'
+                ? 'tap "allow" so i can hear u 🎤'
+                : 'blow into ur phone — for real 🎤'}
             </button>
             {micState === 'failed' && (
               <p className="font-sans text-xs text-cream/60">

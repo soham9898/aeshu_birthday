@@ -193,24 +193,43 @@ button,
 @keyframes flicker {
   0%,
   100% {
-    transform: translateX(-50%) scaleY(1) rotate(-1deg);
+    transform: scaleY(1) rotate(-1deg);
     opacity: 1;
   }
   25% {
-    transform: translateX(-50%) scaleY(1.08) scaleX(0.96) rotate(2deg);
+    transform: scaleY(1.08) scaleX(0.96) rotate(2deg);
     opacity: 0.92;
   }
   50% {
-    transform: translateX(-50%) scaleY(0.94) scaleX(1.05) rotate(-2deg);
+    transform: scaleY(0.94) scaleX(1.05) rotate(-2deg);
     opacity: 1;
   }
   75% {
-    transform: translateX(-50%) scaleY(1.05) scaleX(0.98) rotate(1deg);
+    transform: scaleY(1.05) scaleX(0.98) rotate(1deg);
     opacity: 0.95;
   }
 }
 .candle-flame {
+  transform-origin: 50% 100%;
   animation: flicker 0.14s ease-in-out infinite;
+}
+/* Her breath bends each flame away n squashes it down.
+   --blow (0 → 1) is set live from the mic on the cake;
+   --lean is each candle's own angle, so they don't move as one. */
+.flame-lean {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  width: 10px;
+  height: 16px;
+  margin-left: -5px;
+  transform-origin: 50% 100%;
+  transform: rotate(calc(var(--blow, 0) * var(--lean, 30deg)))
+    scale(calc(1 - var(--blow, 0) * 0.2), calc(1 - var(--blow, 0) * 0.45));
+  opacity: calc(1 - var(--blow, 0) * 0.3);
+  transition:
+    transform 0.12s ease-out,
+    opacity 0.12s ease-out;
 }
 
 /* Thin wisp of smoke rising after the candles are blown out */
@@ -610,6 +629,9 @@ button,
 .candle-glow {
   background: radial-gradient(circle, rgba(255, 190, 90, 0.45), rgba(255, 140, 60, 0.12) 45%, transparent 70%);
   animation: candle-glow 2.2s ease-in-out infinite;
+  /* Wavers with her breath, n dims as each candle goes out (--lit: 1 → 0) */
+  filter: opacity(calc((1 - var(--blow, 0) * 0.45) * (0.35 + var(--lit, 1) * 0.65)));
+  transition: filter 0.3s ease-out;
 }
 @keyframes candle-glow {
   0%, 100% { opacity: 0.75; transform: translateX(-50%) scale(1); }
@@ -1182,7 +1204,8 @@ button,
   45%, 100% { transform: translateX(100%); }
 }
 
-/* ── Grand finale: slow zoom on her photo, fireworks, end credits ── */
+/* ── Grand finale: slow zoom on her photo, end credits ──
+   (the fireworks are drawn on a canvas — see Fireworks.jsx) */
 .finale-photo {
   animation:
     fade-only 2.8s ease both,
@@ -1195,26 +1218,6 @@ button,
 @keyframes finale-zoom {
   from { transform: scale(1.18); }
   to { transform: scale(1); }
-}
-.firework {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-.firework span {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  margin: -2.5px 0 0 -2.5px;
-  border-radius: 50%;
-  opacity: 0;
-  animation: firework 2.8s ease-out infinite;
-}
-@keyframes firework {
-  0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 0; }
-  6% { opacity: 1; }
-  60% { opacity: 1; }
-  100% { transform: rotate(var(--a)) translateY(var(--d)) scale(0.3); opacity: 0; }
 }
 .credits-window {
   height: 9.5rem;

@@ -1,12 +1,14 @@
 import { useState, useMemo, useRef } from 'react';
 import { favoritePhoto, finaleHeading, voiceNote } from '../finale.js';
 import CineText from './CineText.jsx';
+import Fireworks from './Fireworks.jsx';
 
 // ─────────────────────────────────────────────────────
 // The grand finale 🎬 — the last scene of the movie:
 // her favourite photo fades up out of the dark with a slow
 // zoom, the words arrive one by one, confetti bursts,
-// fireworks bloom, and the end credits roll.
+// fireworks bloom into hearts n "I Love You" (on loop),
+// and the end credits roll.
 // ─────────────────────────────────────────────────────
 
 const BURST_COLORS = [
@@ -28,15 +30,6 @@ const CREDITS = [
   ['budget', 'unlimited luv 💸💛'],
   ['the end?', 'nahh… just the beginning 💍'],
 ];
-
-// Where the fireworks bloom (as % of the screen) and when.
-const FIREWORKS = [
-  { x: 18, y: 22, delay: 2.8, color: '#f5c842' },
-  { x: 80, y: 16, delay: 3.7, color: '#f2a0b0' },
-  { x: 62, y: 34, delay: 4.6, color: '#c792ea' },
-  { x: 30, y: 12, delay: 5.5, color: '#ffd479' },
-];
-const SPARKS = 14;
 
 export default function FinaleScreen({ onReplay }) {
   const [photoOk, setPhotoOk] = useState(Boolean(favoritePhoto));
@@ -92,31 +85,12 @@ export default function FinaleScreen({ onReplay }) {
         }}
       />
 
-      {/* Fireworks + confetti burst */}
+      {/* Fireworks (hearts + "I Love You", on loop) + confetti burst */}
       <div
         className="pointer-events-none absolute inset-0 z-[2] overflow-hidden"
         aria-hidden="true"
       >
-        {FIREWORKS.map((f, k) => (
-          <div
-            key={k}
-            className="firework"
-            style={{ left: `${f.x}%`, top: `${f.y}%` }}
-          >
-            {Array.from({ length: SPARKS }, (_, i) => (
-              <span
-                key={i}
-                style={{
-                  background: f.color,
-                  boxShadow: `0 0 6px 1px ${f.color}`,
-                  animationDelay: `${f.delay}s`,
-                  '--a': `${(i * 360) / SPARKS}deg`,
-                  '--d': `${46 + (i % 3) * 12}px`,
-                }}
-              />
-            ))}
-          </div>
-        ))}
+        <Fireworks />
 
         {burst.map((c) => (
           <span

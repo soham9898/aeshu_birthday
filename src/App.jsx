@@ -6,6 +6,7 @@
 //    • src/components/CountdownScreen.jsx → set the birthday date
 //    • src/music.js                       → her song 🎵 (public/audio/song.mp3)
 //    • src/photos.js                      → add your photos (+ captions/dates)
+//    • src/quiz.js                        → the "how well do u know us?" quiz 🤓
 //    • src/components/MessageScreen.jsx   → write your love letter
 //    • src/reasons.js                     → your "reasons I love you" list
 //    • src/vows.js                        → my promises: the saat vachan / 7 pheras 🔥
@@ -21,7 +22,8 @@
 //
 //  SCREEN FLOW:
 //    Opening titles → Secret Gate → Countdown → Celebration
-//               → Photo Gallery → Message → Reasons I Love You
+//               → Photo Gallery → Quiz (how well do u know us?)
+//               → Message → Reasons I Love You
 //               → My Promises (Saat Vachan) → One Lil Secret (gift)
 //               → Grand Finale
 //
@@ -32,6 +34,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { GATE_ENABLED } from './gate.js';
+import quiz from './quiz.js';
 import FloatingHearts from './components/FloatingHearts.jsx';
 import MusicToggle from './components/MusicPlayer.jsx';
 import ChapterCard from './components/ChapterCard.jsx';
@@ -39,6 +42,7 @@ import GateScreen from './components/GateScreen.jsx';
 import CountdownScreen, { birthdayHasArrived } from './components/CountdownScreen.jsx';
 import CelebrationScreen from './components/CelebrationScreen.jsx';
 import PhotoGalleryScreen from './components/PhotoGalleryScreen.jsx';
+import QuizScreen from './components/QuizScreen.jsx';
 import MessageScreen from './components/MessageScreen.jsx';
 import ReasonsScreen from './components/ReasonsScreen.jsx';
 import PromisesScreen from './components/PromisesScreen.jsx';
@@ -63,10 +67,11 @@ const CHAPTERS = {
   countdown: { kicker: 'chapter 1', title: 'the wait ⏳' },
   celebration: { kicker: 'chapter 2', title: 'make a wish, bby 🎂' },
   gallery: { kicker: 'chapter 3', title: 'our lil memories 📸' },
-  message: { kicker: 'chapter 4', title: 'a letter, just for u 💌' },
-  reasons: { kicker: 'chapter 5', title: 'why u? bcoz… 💛' },
-  promises: { kicker: 'chapter 6', title: 'my promises to u 💍' },
-  gift: { kicker: 'chapter 7', title: 'one lil secret 🤫' },
+  quiz: { kicker: 'chapter 4', title: 'how well do u know us? 🤓' },
+  message: { kicker: 'chapter 5', title: 'a letter, just for u 💌' },
+  reasons: { kicker: 'chapter 6', title: 'why u? bcoz… 💛' },
+  promises: { kicker: 'chapter 7', title: 'my promises to u 💍' },
+  gift: { kicker: 'chapter 8', title: 'one lil secret 🤫' },
   finale: { kicker: 'the finale', title: 'forever starts now ✨' },
 };
 
@@ -87,8 +92,11 @@ function firstScreen() {
 
 // Once her birthday has arrived the countdown has nothing left to
 // count, so we glide straight on to the celebration instead.
+// (And with no questions in src/quiz.js, the quiz is skipped.)
 function resolve(next) {
-  return next === 'countdown' && birthdayHasArrived() ? 'celebration' : next;
+  if (next === 'countdown' && birthdayHasArrived()) return 'celebration';
+  if (next === 'quiz' && quiz.length === 0) return 'message';
+  return next;
 }
 
 export default function App() {
@@ -183,7 +191,10 @@ export default function App() {
           <CelebrationScreen onNext={() => goTo('gallery')} />
         )}
         {screen === 'gallery' && (
-          <PhotoGalleryScreen onNext={() => goTo('message')} />
+          <PhotoGalleryScreen onNext={() => goTo('quiz')} />
+        )}
+        {screen === 'quiz' && (
+          <QuizScreen onNext={() => goTo('message')} />
         )}
         {screen === 'message' && (
           <MessageScreen onNext={() => goTo('reasons')} />

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import photos from '../photos.js';
+import quiz from '../quiz.js';
 import CineText from './CineText.jsx';
 
 // How many cards are visible in the stack at once (top card + peeks behind it).
@@ -97,7 +98,9 @@ export default function PhotoGalleryScreen({ onNext }) {
   const hint = !revealed
     ? 'tap the pic to reveal it 👀'
     : isLastRemaining
-    ? 'one last memory… then i open my heart 💛'
+    ? quiz.length > 0
+      ? "one last memory… then let's see how well u remember em 🤓"
+      : 'one last memory… then i open my heart 💛'
     : 'tap the pic for the next memory 👆💛';
 
   // Graceful fallback if no photos have been added yet.
@@ -115,7 +118,7 @@ export default function PhotoGalleryScreen({ onNext }) {
           onClick={onNext}
           className="animate-soft-glow rounded-full border border-gold/40 bg-gold/10 px-7 py-3 font-sans text-base font-semibold text-gold active:scale-95"
         >
-          read my heart →
+          {quiz.length > 0 ? 'pop quiz time 🤓 →' : 'read my heart →'}
         </button>
       </section>
     );

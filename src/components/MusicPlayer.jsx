@@ -5,10 +5,13 @@ import { MUSIC_SRC, MUSIC_VOLUME } from '../music.js';
 // Background music, shared across every screen.
 //
 //   • startMusic()  — called from CelebrationScreen the moment
-//     she taps a candle button (browsers require a tap before
-//     sound is allowed). Safe to call many times; only the
+//     the candles go out. Safe to call many times; only the
 //     first call starts playback. The song fades in gently
 //     and loops forever.
+//   • primeMusic()  — call it inside a tap when the song should
+//     start a lil LATER (e.g. once the mic hears her blow).
+//     Browsers only allow sound that a tap started, so this
+//     quietly warms the song up without making a sound.
 //   • <MusicToggle /> — a small 🔊/🔇 button fixed in the
 //     corner (rendered once in App). It stays hidden until
 //     the music actually starts, and disappears entirely if
@@ -32,16 +35,33 @@ function fail() {
   emit();
 }
 
-export function startMusic() {
-  if (state.started || !MUSIC_SRC) return;
-  state.started = true;
-
+function createAudio() {
+  if (audio || !MUSIC_SRC) return audio;
   audio = new Audio(MUSIC_SRC);
   audio.loop = true;
   audio.volume = 0;
   // Missing / unplayable file → give up quietly (toggle stays hidden).
   audio.addEventListener('error', fail);
+  return audio;
+}
 
+export function primeMusic() {
+  if (state.started || !createAudio()) return;
+  audio.muted = true; // iPhones ignore volume, so mute for the warm-up
+  audio
+    .play()
+    .then(() => {
+      if (!state.started) audio.pause();
+    })
+    .catch(() => {});
+}
+
+export function startMusic() {
+  if (state.started || !createAudio()) return;
+  state.started = true;
+
+  audio.muted = false;
+  audio.volume = 0;
   audio
     .play()
     .then(() => {
