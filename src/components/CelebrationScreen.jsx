@@ -489,8 +489,7 @@ export default function CelebrationScreen({ onNext }) {
         {/* ── Interaction ── */}
         {blown ? (
           <div className="flex flex-col items-center gap-5">
-            {/* Two-line message below the cake —
-                TODO: Replace these two lines with your own message to Aeshu */}
+            {/* Two-line message below the cake */}
             <p
               className="cine-rise font-script max-w-xs text-2xl leading-snug text-gold/95 sm:max-w-md sm:text-3xl"
               style={{ animationDelay: '1.1s' }}

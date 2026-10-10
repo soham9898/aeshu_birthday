@@ -9,15 +9,15 @@ import CineText from './CineText.jsx';
 //      slowly showing up. A tap reveals all of it at once.
 // ─────────────────────────────────────────────────────
 
-// TODO: Replace with your personal message to Aeshu
+// The letter to Aeshu
 // (Each new line starts a new paragraph. It writes itself out on screen.)
-const MESSAGE = `My Dearest Aeshuu, Aaje hu bav khuch che kaaran k aaje maari life na sav thi important person ni Birthday che. Thoda j mahina-o ma aapda aa relation nu 1 varas complete thase.
-Maari life nu sav this Happiest 1 varas hatu aa kaaran k aa 1 varas ma tame maari saathe hata, maara hata !
+const MESSAGE = `My Dearest Aeshuu, Aaje hu bav khush chu kaaran k aaje maari life na sav thi important person ni Birthday che. Thoda j mahina-o ma aapda aa relation nu 1 varas complete thase.
+Maari life nu sav thi Happiest 1 varas hatu aa kaaran k aa 1 varas ma tame maari saathe hata, maara hata !
 Bs aa j rite maare aakhu jivan tamari saathe rehvu che !
 Mane haji yaad che jyaare aapde pehli vaar ek bija saathe vaat kri hti ! Ek e divas hto ane 1 aaj no divas che !
 Kyaa thi kyaa aai gaya aapde !
-Kaya shabdo ma kav tame maara maate ketla important cho ! Bs atlu samjhi lo k tamara vagar nahi jivi saku ! Maara maate Oxygen cho tame ! Bs have tame maari saathe rehjo, maari saathe jivo, maari saathe rehjo, Hamesha !
-Jem jem samay jato gyo tem tem tame maara maate maaru jivan bani gaya cho ! Hame tamara vagar jivu ana krta mari javu vadhare pasand kris hu !
+Kaya shabdo ma kav tame maara maate ketla important cho ! Bs atlu samjhi lo k tamara vagar nahi jivi saku ! Maara maate Oxygen cho tame ! Bs have tame maari saathe rehjo, maari saathe jivo, Hamesha !
+Jem jem samay jato gyo tem tem tame maara maate maaru jivan bani gaya cho ! Have tamara vagar jivu ena krta mari javu vadhare pasand karis hu !
 Tamne khabar che ? Tamari ek smile maaro aakho divas banavi de che ! Savaar ma tamaro 'Good Morning' no message aave tyaare j maaro divas sharu thaay che, ane raat ma tamara 'Good Night' vagar to mane oongh j nathi aavti 🙈
 Aapde saathe ketli badhi yaado banaavi che — e café vaali date, e scooty vaali rides, e cloudy divas, ane e jhaad niche besine kareli lambi lambi vaato ! Ek ek pal mane haji pan evu ne evu yaad che 🥹
 Tame jyaare haso cho ne, tyaare evu laage che k aakhi duniya ni khushi bas tamara chehra par aavi gai che ! Ane jyaare tame gusse thao cho, tyaare pan etla j cute lago cho 😜 (pan please vadhare gusso na karta 🙏😂)

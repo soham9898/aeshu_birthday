@@ -97,17 +97,6 @@ npm install      # install dependencies (first time only)
 npm run dev      # preview locally at the URL it prints
 ```
 
-## 💌 Automatic delivery (email + SMS, 1 hour before her birthday)
-
-The repo includes a GitHub Actions workflow
-(`.github/workflows/birthday-surprise.yml`) that automatically sends her
-the website link by **email** and **SMS** at ~11 PM the night before —
-one hour before her day begins. Her email, number, and your credentials
-are stored as private **GitHub Secrets**, never in the code.
-
-👉 Follow the step-by-step guide in **`NOTIFICATIONS_SETUP.md`**
-(set the date, add the secrets, and send a test to yourself first).
-
 ## 🌐 Deploy to GitHub Pages
 
 1. Create a GitHub repo named **`aeshu_birthday`** and push this project to it.

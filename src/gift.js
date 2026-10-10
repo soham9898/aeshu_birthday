@@ -5,7 +5,7 @@
 // She rubs it with her finger (like a lottery ticket), and
 // underneath is a REAL-WORLD clue: where her gift is hiding.
 //
-// TODO: Hide the real gift, then write where it is below!
+// Where the real gift is hiding:
 //   • GIFT_CLUE  : the big line under the gold. Keep it short
 //                  so it fits on the card. Ideas:
 //                    'check under ur pillow 🛏️'

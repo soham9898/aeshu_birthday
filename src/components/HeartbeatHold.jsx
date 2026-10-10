@@ -13,7 +13,7 @@ import CineText from './CineText.jsx';
 // don't let websites vibrate, so there it's just the pulse.
 // ─────────────────────────────────────────────────────
 
-// TODO (optional): the line that appears once she's felt it.
+// The line that appears once she's felt it.
 const HEART_LINE = 'this is how my heart beats when ur near 🫀';
 
 const LUB_DUB = [70, 110, 100]; // buzz · pause · buzz (ms) = one heartbeat

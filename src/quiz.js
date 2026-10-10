@@ -8,7 +8,7 @@
 //     never a "fail". Every answer leads somewhere loving.
 // At the end she sees her score + a loving verdict.
 //
-// TODO: Replace the sample questions below with your own!
+// How each question works:
 //   • question : what you ask her
 //   • options  : 2–4 answers for her to pick from
 //   • answer   : which option is right, counted from 0
@@ -24,13 +24,13 @@
 
 const quiz = [
   {
-    // TODO: sample — swap in your real question, options + answer
-    question: 'where did we go on our very first date? ☕',
-    options: ['a cozy café ☕', 'a long scooty ride 🛵', 'the beach 🌊', 'garba night 💃'],
-    answer: 0,
+    question: 'where did we go on our very first date? 🥹',
+    options: ['a cozy café ☕', 'a long scooty ride 🛵', 'taksh galaxy mall 🛍️', 'the beach 🌊'],
+    answer: 2,
+    right: 'yesss!! taksh galaxy 🛍️ … where it all began 🥹💛',
+    wrong: 'it was taksh galaxy mall 🛍️ … our very first one 🙈💛',
   },
   {
-    // TODO: sample — set `answer` to whoever really said it first
     question: 'who said "i luv u" first? 🙈',
     options: ['me (aeshu) 🙋‍♀️', 'soham 🙋‍♂️'],
     answer: 1,

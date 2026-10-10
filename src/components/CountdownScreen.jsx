@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import CineText from './CineText.jsx';
 
 // ─────────────────────────────────────────────────────
-// TODO: Set your wife's birthday here 👇
+// Aeshu's birthday 👇 (the site unlocks at this exact moment)
 // Format: new Date('YYYY-MM-DDTHH:MM:SS')  (24-hour clock, local time)
-const BIRTHDAY_DATE = new Date('2025-12-25T00:00:00');
-// const BIRTHDAY_DATE = new Date('2027-01-18T00:00:00');
+const BIRTHDAY_DATE = new Date('2027-01-18T00:00:00');
 // ─────────────────────────────────────────────────────
 
 const LOVE_NOTES = [

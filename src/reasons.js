@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────
-// TODO: Write your own "Reasons I Love You" here 💛
+// "Reasons I Love You" 💛
 //
 // She reveals them ONE AT A TIME by tapping, so make each
 // one short and straight from the heart. Inside jokes,
